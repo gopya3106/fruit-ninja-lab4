@@ -8,23 +8,36 @@ WHITE = (255, 255, 255)
 BOMB_BLACK = (30, 30, 30)
 FRUIT_COLORS = [(220, 60, 60), (230, 140, 40), (230, 200, 40), (90, 180, 90)]
 
+# Difficulty settings: spawn_interval = frames between spawns (lower = faster)
+DIFFICULTIES = {
+    "Easy":   {"spawn_interval": 75, "bomb_chance": 0.08},
+    "Medium": {"spawn_interval": 55, "bomb_chance": 0.15},
+    "Hard":   {"spawn_interval": 35, "bomb_chance": 0.28},
+}
+
 class GameEngine:
     def __init__(self, width, height):
         self.width = width
         self.height = height
 
-        self.fruits = []
-        self.trail = []  # recent mouse positions, drawn as the "blade"
-
-        self.spawn_interval = 55  # frames between spawns
-        self._spawn_timer = 0
-        self.bomb_chance = 0.15
         self.speed_scale = 1.0
-
-        self.lives = 3
-        self.score = 0
         self.font = pygame.font.SysFont("Arial", 28)
         self.big_font = pygame.font.SysFont("Arial", 64, bold=True)
+        self.difficulty = "Medium"
+        self.reset(self.difficulty)
+
+    def reset(self, difficulty):
+        """Start a fresh game with the chosen difficulty."""
+        self.difficulty = difficulty
+        settings = DIFFICULTIES[difficulty]
+        self.spawn_interval = settings["spawn_interval"]
+        self.bomb_chance = settings["bomb_chance"]
+
+        self.fruits = []
+        self.trail = []  # recent mouse positions, drawn as the "blade"
+        self._spawn_timer = 0
+        self.lives = 3
+        self.score = 0
         self.game_over = False
         self.game_over_reason = ""
 
@@ -41,9 +54,15 @@ class GameEngine:
 
     def handle_event(self, event):
         if self.game_over:
-            # Wait for the player: any key press closes the game
             if event.type == pygame.KEYDOWN:
-                pygame.event.post(pygame.event.Event(pygame.QUIT))
+                if event.key == pygame.K_1:
+                    self.reset("Easy")
+                elif event.key == pygame.K_2:
+                    self.reset("Medium")
+                elif event.key == pygame.K_3:
+                    self.reset("Hard")
+                elif event.key in (pygame.K_q, pygame.K_ESCAPE):
+                    pygame.event.post(pygame.event.Event(pygame.QUIT))
             return
 
         if event.type == pygame.MOUSEMOTION:
@@ -122,10 +141,11 @@ class GameEngine:
         screen.blit(overlay, (0, 0))
 
         lines = [
-            (self.big_font, "GAME OVER", (230, 60, 60), -90),
-            (self.font, self.game_over_reason, WHITE, -30),
-            (self.big_font, f"Final Score: {self.score}", (230, 200, 40), 30),
-            (self.font, "Press any key to exit", WHITE, 110),
+            (self.big_font, "GAME OVER", (230, 60, 60), -140),
+            (self.font, self.game_over_reason, WHITE, -85),
+            (self.big_font, f"Final Score: {self.score}", (230, 200, 40), -25),
+            (self.font, "Play again:  1 = Easy   2 = Medium   3 = Hard", WHITE, 55),
+            (self.font, "Press Q or Esc to exit", WHITE, 100),
         ]
         for font, text, color, offset in lines:
             surf = font.render(text, True, color)
