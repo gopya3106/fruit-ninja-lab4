@@ -42,9 +42,10 @@ class GameEngine:
             self._handle_motion(event.pos)
 
     def _handle_motion(self, pos):
-        x, y = pos
+        prev = self.trail[-1] if self.trail else pos
+
         for fruit in self.fruits:
-            if not fruit.sliced and fruit.contains_point(x, y):
+            if not fruit.sliced and fruit.intersects_segment(prev[0], prev[1], pos[0], pos[1]):
                 self._slice(fruit)
 
         self.trail.append(pos)
