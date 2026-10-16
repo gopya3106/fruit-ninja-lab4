@@ -24,7 +24,9 @@ class GameEngine:
         self.lives = 3
         self.score = 0
         self.font = pygame.font.SysFont("Arial", 28)
+        self.big_font = pygame.font.SysFont("Arial", 64, bold=True)
         self.game_over = False
+        self.game_over_reason = ""
 
     def spawn_fruit(self):
         x = random.randint(60, self.width - 60)
@@ -38,10 +40,17 @@ class GameEngine:
         self.fruits.append(fruit)
 
     def handle_event(self, event):
+        if self.game_over:
+            # Wait for the player: any key press closes the game
+            if event.type == pygame.KEYDOWN:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+            return
+
         if event.type == pygame.MOUSEMOTION:
             self._handle_motion(event.pos)
 
     def _handle_motion(self, pos):
+        # Previous mouse position (from the trail), or the current one on the first event
         prev = self.trail[-1] if self.trail else pos
 
         for fruit in self.fruits:
@@ -56,6 +65,7 @@ class GameEngine:
         fruit.sliced = True
         if fruit.kind == "bomb":
             self.game_over = True
+            self.game_over_reason = "You sliced a bomb!"
         else:
             self.score += 1
 
@@ -85,8 +95,9 @@ class GameEngine:
             still_alive.append(fruit)
         self.fruits = still_alive
 
-        if self.lives <= 0:
+        if self.lives <= 0 and not self.game_over:
             self.game_over = True
+            self.game_over_reason = "You ran out of lives!"
 
     def render(self, screen):
         for fruit in self.fruits:
@@ -101,7 +112,22 @@ class GameEngine:
         lives_text = self.font.render(f"Lives: {self.lives}", True, WHITE)
         screen.blit(lives_text, (self.width - 130, 10))
 
-        if self.game_over and not getattr(self, "_game_over_logged", False):
-            # NOTE: no proper game-over screen yet - see Task 2 in the README.
-            print("Game over! Final score:", self.score)
-            self._game_over_logged = True
+        if self.game_over:
+            self._draw_game_over(screen)
+
+    def _draw_game_over(self, screen):
+        # Dim the background
+        overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 170))
+        screen.blit(overlay, (0, 0))
+
+        lines = [
+            (self.big_font, "GAME OVER", (230, 60, 60), -90),
+            (self.font, self.game_over_reason, WHITE, -30),
+            (self.big_font, f"Final Score: {self.score}", (230, 200, 40), 30),
+            (self.font, "Press any key to exit", WHITE, 110),
+        ]
+        for font, text, color, offset in lines:
+            surf = font.render(text, True, color)
+            rect = surf.get_rect(center=(self.width // 2, self.height // 2 + offset))
+            screen.blit(surf, rect)
