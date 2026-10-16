@@ -1,6 +1,7 @@
 import pygame
 import random
 from .fruit import Fruit
+from .sounds import SoundManager
 
 # Game Engine
 
@@ -23,6 +24,7 @@ class GameEngine:
         self.speed_scale = 1.0
         self.font = pygame.font.SysFont("Arial", 28)
         self.big_font = pygame.font.SysFont("Arial", 64, bold=True)
+        self.sounds = SoundManager()
         self.difficulty = "Medium"
         self.reset(self.difficulty)
 
@@ -83,10 +85,17 @@ class GameEngine:
     def _slice(self, fruit):
         fruit.sliced = True
         if fruit.kind == "bomb":
-            self.game_over = True
-            self.game_over_reason = "You sliced a bomb!"
+            self.sounds.play_bomb()
+            self._end_game("You sliced a bomb!")
         else:
             self.score += 1
+            self.sounds.play_slice()
+
+    def _end_game(self, reason):
+        if not self.game_over:
+            self.game_over = True
+            self.game_over_reason = reason
+            self.sounds.play_game_over()
 
     def handle_input(self):
         # Reserved for continuously-held-key input; this game is
@@ -114,9 +123,8 @@ class GameEngine:
             still_alive.append(fruit)
         self.fruits = still_alive
 
-        if self.lives <= 0 and not self.game_over:
-            self.game_over = True
-            self.game_over_reason = "You ran out of lives!"
+        if self.lives <= 0:
+            self._end_game("You ran out of lives!")
 
     def render(self, screen):
         for fruit in self.fruits:
