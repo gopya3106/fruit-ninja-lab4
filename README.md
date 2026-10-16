@@ -94,6 +94,31 @@ fruit-ninja-lite-main/
 
 Submission is only the following three things:
 
-- [] A 10-second video of gameplay **before** your changes, showing the bug/broken behavior
-- [] A 10-second video of gameplay **after** your changes, showing the bug fixed and the new features working
-- [] The Chat/LLM used page link, with the complete chat history
+- [x] A 10-second video of gameplay **before** your changes, showing the bug/broken behavior
+- [x] A 10-second video of gameplay **after** your changes, showing the bug fixed and the new features working
+- [x] The Chat/LLM used page link, with the complete chat history
+
+---
+
+## My Changes (Lab 4)
+
+**Task 1 – Collision detection:** Fast swipes were missed because only the mouse's
+current point was checked. Collision now tests the line segment between the previous
+and current mouse positions against each fruit's circle (`Fruit.intersects_segment`).
+
+**Task 2 – Game Over screen:** An on-screen overlay shows the reason (bomb or no lives)
+and the final score instead of printing to the console.
+
+**Task 3 – Replay:** After Game Over, press **1** (Easy), **2** (Medium) or **3** (Hard)
+to play again, or **Q / Esc** to exit. Difficulty changes spawn rate and bomb chance.
+
+**Task 4 – Sound:** Sound effects for slicing a fruit, hitting a bomb, and game over
+(generated in code in `game/sounds.py`, so no audio files are needed).
+
+### Deliverables
+- Before / after videos, code and chat history: see the `Lab-4/` folder
+- Chat link: <paste your link here, if you made one>
+
+### Run it
+    pip install -r requirements.txt
+    python main.py
